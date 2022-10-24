@@ -1,0 +1,98 @@
+#!/usr/local/bin/perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use YAML::yq::Helper;
+
+sub version {
+	print "yqh v. 0.0.1\n";
+}
+
+sub help {
+	&version;
+
+	print '
+
+-f <file>      Config INI file.
+               Default :: undef
+
+-a <action>    Action to perform.
+               Default :: undef
+';
+}
+
+# get the commandline options
+my $help    = 0;
+my $version = 0;
+my $file;
+my $var;
+my $action;
+Getopt::Long::Configure('no_ignore_case');
+Getopt::Long::Configure('bundling');
+GetOptions(
+	'version' => \$version,
+	'v'       => \$version,
+	'help'    => \$help,
+	'h'       => \$help,
+	'f=s'     => \$file,
+	'a=s'     => \$action,
+	'var=s'   => \$var,
+);
+
+# print version or help if requested
+if ($help) {
+        &help;
+        exit 42;
+}
+if ($version) {
+        &version;
+        exit 42;
+	}
+
+if (!defined($action)) {
+	die('No action defined for -a');
+}
+
+my $yq=YAML::yq::Helper->new(file=>$file);
+
+if ($action eq 'is_array') {
+	print $yq->is_array(var=>$var)."\n";
+	exit 0;
+}
+
+if ($action eq 'is_hash') {
+	print $yq->is_hash(var=>$var)."\n";
+	exit 0;
+}
+
+if ($action eq 'is_defined') {
+	print $yq->is_defined(var=>$var)."\n";
+	exit 0;
+}
+
+if ($action eq 'clear_array') {
+	$yq->clear_array(var=>$var);
+	exit 0;
+}
+
+if ($action eq 'clear_hash') {
+	$yq->clear_hash(var=>$var);
+	exit 0;
+}
+
+if ($action eq 'delete_array') {
+	$yq->delete_array(var=>$var);
+	exit 0;
+}
+
+if ($action eq 'delete_hash') {
+	$yq->delete_hash(var=>$var);
+	exit 0;
+}
+
+
+#
+# means we did not match anything
+#
+die( 'No matching action, -a, found for "' . $action . '"' );
