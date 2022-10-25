@@ -161,6 +161,36 @@ sub clear_hash {
 	$self->ensure;
 }
 
+=head2 delete
+
+Deletes an variable. If it is already undef, it will just return.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    $yq->delete_array(var=>'rule-files');
+
+=cut
+
+sub delete {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for var to check');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		return;
+	}
+
+	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
+
+	$self->ensure;
+}
+
 =head2 delete_array
 
 Deletes an array. If it is already undef, it will just return.
@@ -425,10 +455,10 @@ sub is_hash {
 	}
 	elsif ( $string =~ /\{\}/ ) {
 		return 1;
-	}	elsif ( $string eq "null\n" ) {
+	}
+	elsif ( $string eq "null\n" ) {
 		return 0;
 	}
-
 
 	my $yaml = Load($string);
 
@@ -474,6 +504,60 @@ sub is_hash_clear {
 	}
 
 	return 0;
+}
+
+=head2 set_array
+
+Creates an array and sets it to the values.
+
+If the array is already defined, it will clear it and set
+the values to those specified.
+
+Will die if called on a item that is not a array.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    - vals :: Array of values to set the array to.
+
+    $yq->set_array(var=>'rule-files',vals=>\@vals);
+
+=cut
+
+sub set_array {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{vals} ) ) {
+		die('Nothing specified for vars');
+	}
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for vals');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	my $string;
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
+	}
+	else {
+		$self->clear_array( var => $opts{var} );
+	}
+
+	if ( $opts{var} !~ /\[\]$/ ) {
+		$opts{var} =~ s/\[\]$//;
+	}
+
+	my $int = 0;
+	while ( defined( $opts{vals}[$int] ) ) {
+		my $insert = $opts{var} . '[' . $int . ']="' . $opts{vals}[$int] . '"';
+		$string = `yq -i '$insert' $self->{qfile}`;
+		$int++;
+	}
+
+	$self->ensure;
 }
 
 =head1 AUTHOR

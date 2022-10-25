@@ -28,6 +28,9 @@ my $version = 0;
 my $file;
 my $var;
 my $action;
+my $vals_string;
+my $vals_sep = ',';
+my $key;
 Getopt::Long::Configure('no_ignore_case');
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -38,59 +41,77 @@ GetOptions(
 	'f=s'     => \$file,
 	'a=s'     => \$action,
 	'var=s'   => \$var,
+	'sep=s'   => \$vals_sep,
+	'vals=s'  => \$vals_string,
+	'k=s'     => \$key,
 );
+
+my @vals;
+if ( defined($vals_string) ) {
+	$vals_sep = quotemeta($vals_sep);
+	@vals     = split( /$vals_sep/, $vals_string );
+}
 
 # print version or help if requested
 if ($help) {
-        &help;
-        exit 42;
+	&help;
+	exit 42;
 }
 if ($version) {
-        &version;
-        exit 42;
-	}
+	&version;
+	exit 42;
+}
 
-if (!defined($action)) {
+if ( !defined($action) ) {
 	die('No action defined for -a');
 }
 
-my $yq=YAML::yq::Helper->new(file=>$file);
+my $yq = YAML::yq::Helper->new( file => $file );
 
-if ($action eq 'is_array') {
-	print $yq->is_array(var=>$var)."\n";
+if ( $action eq 'is_array' ) {
+	print $yq->is_array( var => $var ) . "\n";
 	exit 0;
 }
 
-if ($action eq 'is_hash') {
-	print $yq->is_hash(var=>$var)."\n";
+if ( $action eq 'is_hash' ) {
+	print $yq->is_hash( var => $var ) . "\n";
 	exit 0;
 }
 
-if ($action eq 'is_defined') {
-	print $yq->is_defined(var=>$var)."\n";
+if ( $action eq 'is_defined' ) {
+	print $yq->is_defined( var => $var ) . "\n";
 	exit 0;
 }
 
-if ($action eq 'clear_array') {
-	$yq->clear_array(var=>$var);
+if ( $action eq 'clear_array' ) {
+	$yq->clear_array( var => $var );
 	exit 0;
 }
 
-if ($action eq 'clear_hash') {
-	$yq->clear_hash(var=>$var);
+if ( $action eq 'clear_hash' ) {
+	$yq->clear_hash( var => $var );
 	exit 0;
 }
 
-if ($action eq 'delete_array') {
-	$yq->delete_array(var=>$var);
+if ( $action eq 'delete_array' ) {
+	$yq->delete_array( var => $var );
 	exit 0;
 }
 
-if ($action eq 'delete_hash') {
-	$yq->delete_hash(var=>$var);
+if ( $action eq 'delete_hash' ) {
+	$yq->delete_hash( var => $var );
 	exit 0;
 }
 
+if ( $action eq 'delete' ) {
+	$yq->delete( var => $var );
+	exit 0;
+}
+
+if ( $action eq 'set_array' ) {
+	$yq->set_array( var => $var, vals => \@vals );
+	exit 0;
+}
 
 #
 # means we did not match anything
