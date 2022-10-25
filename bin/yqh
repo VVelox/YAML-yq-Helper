@@ -14,11 +14,71 @@ sub help {
 
 	print '
 
--f <file>      Config INI file.
-               Default :: undef
+-f <file>         Config INI file.
+                  Default :: undef
 
--a <action>    Action to perform.
-               Default :: undef
+-a <action>       Action to perform.
+                  Default :: undef
+
+--var <string>    Variable to set.
+                  Default :: undef
+
+--vals <string>   Comma seperate list of array values.
+                  Default :: undef
+
+--hash <string>   Comma seperate list of hash values. Each
+                  value is a sub string with key/value seperate
+                  by a /=/.
+                  Default :: undef
+
+Action :: is_array
+Description :: Returns 0 or 1 based on if it is a array.
+Requires :: --var
+
+Action :: is_hash
+Description :: Returns 0 or 1 based on if it is a hash.
+Requires :: --var
+
+Action :: is_defined
+Description :: Returns 0 or 1 based on if it is defined.
+Requires :: --var
+
+Action :: clear_array
+Description :: Clears the specified array.
+Requires :: --var
+
+Action :: clear_hash
+Description :: Clears the specified hash.
+Requires :: --var
+
+Action :: create_array
+Description :: Creates the specified array if it does not exist.
+Requires :: --var
+Optional :: --vals
+
+Action :: create_hash
+Description :: Creates the specified hash if it does not exist.
+Requires :: --var
+
+Action :: delete
+Description :: Deletes the var without checking the type.
+Requires :: --var
+
+Action :: delete_array
+Description :: Deletes the specified array.
+Requires :: --var
+
+Action :: delete_hash
+Description :: Deletes the specified hash.
+Requires :: --var
+
+Action :: set_array
+Description :: Clears the array and sets it to specified values.
+Requires :: --var,--vals
+
+Action :: set_hash
+Description :: Clears the hash and sets it to specified values.
+Requires :: --var,--hash
 ';
 }
 
@@ -33,6 +93,7 @@ my $val_string;
 my $vals_sep = ',';
 my $key;
 my $hash_string;
+my $val;
 Getopt::Long::Configure('no_ignore_case');
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -52,6 +113,30 @@ GetOptions(
 
 $vals_sep = quotemeta($vals_sep);
 
+#
+# make sure we've not been passed ' or " to make things simpler to handle
+#
+if ( defined($var) ) {
+	if ( $var =~ /[\'\"]/ ) {
+		die('--var may not contain \' or "');
+	}
+}
+
+if ( defined($val_string) ) {
+	if ( $val_string =~ /[\'\"]/ ) {
+		die('--val may not contain \' or "');
+	}
+}
+
+if ( defined($hash_string) ) {
+	if ( $hash_string =~ /[\'\"]/ ) {
+		die('--hash may not contain \' or "');
+	}
+}
+
+#
+# break up the array vals string if passed
+#
 my @vals;
 if ( defined($vals_string) ) {
 	if ( $vals_string =~ /[\'\"]/ ) {
@@ -61,6 +146,9 @@ if ( defined($vals_string) ) {
 	@vals = split( /$vals_sep/, $vals_string );
 }
 
+#
+# break up the hash string if passed
+#
 my $hash = {};
 if ( defined($hash_string) ) {
 	if ( $hash_string =~ /[\'\"]/ ) {
@@ -76,18 +164,6 @@ if ( defined($hash_string) ) {
 		elsif ( defined($item_key) and $item_key eq '' ) {
 			die('--hash contains a key that matches ""');
 		}
-	}
-}
-
-if ( defined($var) ) {
-	if ( $var =~ /[\'\"]/ ) {
-		die('--var may not contain \' or "');
-	}
-}
-
-if ( defined($val_string) ) {
-	if ( $val_string =~ /[\'\"]/ ) {
-		die('--val may not contain \' or "');
 	}
 }
 
@@ -154,6 +230,11 @@ if ( $action eq 'set_array' ) {
 
 if ( $action eq 'set_hash' ) {
 	$yq->set_hash( var => $var, hash => $hash );
+	exit 0;
+}
+
+if ( $action eq 'set_val' ) {
+	$yq->set_val( var => $var, val => $val );
 	exit 0;
 }
 

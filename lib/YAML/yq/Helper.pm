@@ -653,7 +653,7 @@ Will die if called on a item that is not a array.
     - var :: Variable to check. If not matching /^\./,
              a period will be prepended.
 
-    - hash :: 
+    - hash :: A hash to use for generating the hash to be added.
 
     $yq->set_array(var=>'rule-files',vals=>\@vals);
 
@@ -662,8 +662,29 @@ Will die if called on a item that is not a array.
 sub set_hash {
 	my ( $self, %opts ) = @_;
 
+	my @keys;
 	if ( !defined( $opts{hash} ) ) {
 		die('Nothing specified for hash');
+	}
+	else {
+		if ( ref( $opts{hash} ) ne 'HASH' ) {
+			die( 'The passed value for hash is a ' . ref( $opts{hash} ) . ' and not HASH' );
+		}
+
+		@keys = keys( %{ $opts{hash} } );
+
+		foreach my $key (@keys) {
+			if (   defined( $opts{hash}{$key} )
+				&& ref( $opts{hash}{$key} ) ne 'SCALAR'
+				&& ref( $opts{hash}{$key} ) ne '' )
+			{
+				die(      'The passed value for the key "'
+						. $key
+						. '" for the hash is a '
+						. ref( $opts{hash}{$key} )
+						. ' and not SCALAR or undef' );
+			}
+		}
 	}
 
 	if ( !defined( $opts{var} ) ) {
@@ -689,7 +710,6 @@ sub set_hash {
 		$self->clear_hash( var => $opts{var} );
 	}
 
-	my @keys = keys( %{ $opts{hash} } );
 	foreach my $key (@keys) {
 		my $insert;
 		if ( defined( $opts{hash}{$key} ) ) {
