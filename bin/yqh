@@ -48,8 +48,18 @@ GetOptions(
 
 my @vals;
 if ( defined($vals_string) ) {
+	if ($vals_string =~ /[\'\"]/) {
+		die('--vals may not contain \' or "');
+	}
+
 	$vals_sep = quotemeta($vals_sep);
 	@vals     = split( /$vals_sep/, $vals_string );
+}
+
+if (defined($var)) {
+	if ($var =~ /[\'\"]/) {
+		die('--var may not contain \' or "');
+	}
 }
 
 # print version or help if requested
