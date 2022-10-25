@@ -29,6 +29,7 @@ my $file;
 my $var;
 my $action;
 my $vals_string;
+my $val_string;
 my $vals_sep = ',';
 my $key;
 Getopt::Long::Configure('no_ignore_case');
@@ -42,7 +43,8 @@ GetOptions(
 	'a=s'     => \$action,
 	'var=s'   => \$var,
 	'sep=s'   => \$vals_sep,
-	'vals=s'  => \$vals_string,
+		   'vals=s'  => \$vals_string,
+		   'val=s'  => \$val_string,
 	'k=s'     => \$key,
 );
 
@@ -59,6 +61,12 @@ if ( defined($vals_string) ) {
 if (defined($var)) {
 	if ($var =~ /[\'\"]/) {
 		die('--var may not contain \' or "');
+	}
+}
+
+if (defined($val_string)) {
+	if ($val_string =~ /[\'\"]/) {
+		die('--val may not contain \' or "');
 	}
 }
 
@@ -120,6 +128,11 @@ if ( $action eq 'delete' ) {
 
 if ( $action eq 'set_array' ) {
 	$yq->set_array( var => $var, vals => \@vals );
+	exit 0;
+}
+
+if ( $action eq 'create_array' ) {
+	$yq->create_array( var => $var, vals => \@vals );
 	exit 0;
 }
 

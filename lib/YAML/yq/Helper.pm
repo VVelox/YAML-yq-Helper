@@ -161,6 +161,51 @@ sub clear_hash {
 	$self->ensure;
 }
 
+=head2 create_array
+
+Creates a empty array. Unlike set_array, vals is optional.
+
+Will die if it already exists.
+
+    - var :: Variable to operate on. If not matching /^\./,
+             a period will be prepended.
+
+    $yq->clear_array(var=>'rule-files');
+
+=cut
+
+sub create_array {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for var to check');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	my $string;
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
+	}
+	else {
+		die('"'.$opts{var}.'" already exists');
+	}
+
+	if ( $opts{var} !~ /\[\]$/ ) {
+		$opts{var} =~ s/\[\]$//;
+	}
+
+	my $int = 0;
+	while ( defined( $opts{vals}[$int] ) ) {
+		my $insert = $opts{var} . '[' . $int . ']="' . $opts{vals}[$int] . '"';
+		$string = `yq -i '$insert' $self->{qfile}`;
+		$int++;
+	}
+
+	$self->ensure;
+}
+
 =head2 delete
 
 Deletes an variable. If it is already undef, it will just return.
@@ -539,7 +584,7 @@ sub set_array {
 	}
 
 	my $string;
-	if ( !$self->is_defined( var => $opts{var} ) ) {
+	if ( $self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
 	}
 	else {
