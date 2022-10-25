@@ -6,7 +6,7 @@ use Getopt::Long;
 use YAML::yq::Helper;
 
 sub version {
-	print "yqh v. 0.0.1\n";
+	print "yqh v. 0.1.0\n";
 }
 
 sub help {
