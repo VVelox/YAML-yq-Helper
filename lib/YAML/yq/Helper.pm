@@ -8,37 +8,35 @@ use File::Slurp qw (read_file write_file);
 
 =head1 NAME
 
-YAML::yq::Helper - Wrapper for yq for basic tasks so comments are preserved.
+YAML::yq::Helper - Wrapper for yq for various common tasks so YAML files can be manipulated in a manner to preserve comments and version header.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
 
     use YAML::yq::Helper;
 
     my $yq = YAML::yq::Helper->new(file='/etc/suricata/suricata-ids.yaml');
 
+    $yq->set_array(var=>'rule-files', vals=>['suricata.rules','custom.rules'])
 
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
-=head1 SUBROUTINES/METHODS
+=head1 METHODS
 
 =head2 new
 
-Inits the object.
+Inits the object and check if a version header is present for use with the
+ensure method.
+
+Will make sure the file specified exists, is a file, is readable, and is
+writable. Otherwise it will die.
+
+Will also die if yq is not in the path.
 
     - file :: The YAML file to operate on.
 
@@ -321,7 +319,7 @@ Will die if called on a item that is not a hash.
     - var :: Variable to check. If not matching /^\./,
              a period will be prepended.
 
-    $yq->delete_hash(var=>'rule-files');
+    $yq->delete_hash(var=>'vars');
 
 =cut
 
@@ -559,8 +557,8 @@ Will die if called on a item that is not a hash.
     - var :: Variable to check. If not matching /^\./,
              a period will be prepended.
 
-    if ( $yq->is_hash_clear(var=>'rule-files') ){
-        print "clear...\n:";
+    if ( ! $yq->is_hash_clear(var=>'vars') ){
+        print "not clear...\n:";
     }
 
 =cut
@@ -643,9 +641,9 @@ sub set_array {
 
 =head2 set_hash
 
-Creates an array and sets it to the values.
+Creates an hash and sets it to the values.
 
-If the array is already defined, it will clear it and set
+If the hash is already defined, it will clear it and set
 the values to those specified.
 
 Will die if called on a item that is not a array.
@@ -653,9 +651,10 @@ Will die if called on a item that is not a array.
     - var :: Variable to check. If not matching /^\./,
              a period will be prepended.
 
-    - hash :: A hash to use for generating the hash to be added.
+    - hash :: A hash to use for generating the hash to be
+              added. Any undef value will be set to null.
 
-    $yq->set_array(var=>'rule-files',vals=>\@vals);
+    $yq->set_array(var=>'vars',hash=>{a=>33,bar=>undef});
 
 =cut
 
