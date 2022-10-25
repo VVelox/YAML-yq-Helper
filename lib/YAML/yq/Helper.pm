@@ -240,6 +240,68 @@ sub create_hash {
 	$self->ensure;
 }
 
+=head2 dedup_array
+
+Dedup the specified array.
+
+Will die if called on a item that is not a array or the array
+does not exist.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    $yq->set_array(var=>'rule-files');
+
+=cut
+
+sub dedup_array {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{dedup} ) ) {
+		$opts{dedup} = 1;
+	}
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for vals');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	if ( $opts{var} =~ /\[\]$/ ) {
+		$opts{var} =~ s/\[\]$//;
+	}
+
+	my $string;
+	if ( !$self->is_array( var => $opts{var} ) ) {
+		die( '"' . $opts{var} . '" is not a array or is undef' );
+	}
+
+	$string = `yq "$opts{var}" $self->{qfile} 2> /dev/null`;
+	my $yaml;
+	if ( $string =~ /\[\]/ ) {
+		print "blank\n";
+		$yaml = [];
+	}
+	else {
+		eval { $yaml = Load($string); };
+	}
+
+	my $int      = 0;
+	my $existing = {};
+	my @new_array;
+	while ( defined( $yaml->[$int] ) ) {
+		if ( !defined( $existing->{ $yaml->[$int] } ) ) {
+			$existing->{ $yaml->[$int] } = 1;
+			push( @new_array, $yaml->[$int] );
+		}
+
+		$int++;
+	}
+
+	$self->set_array( var => $opts{var}, vals => \@new_array );
+}
+
 =head2 delete
 
 Deletes an variable. If it is already undef, it will just return.
@@ -585,6 +647,71 @@ sub is_hash_clear {
 	return 0;
 }
 
+=head2 push_array
+
+Pushes the passed array onto the specified array.
+
+Will die if called on a item that is not a array or the array
+does not exist.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    - vals :: Array of values to set the array to.
+
+    $yq->set_array(var=>'rule-files',vals=>\@new_rules_files);
+
+=cut
+
+sub push_array {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{vals} ) ) {
+		die('Nothing specified for vars');
+	}
+	else {
+		if ( !defined $opts{vals}[0] ) {
+			return;
+		}
+	}
+
+	if ( !defined( $opts{dedup} ) ) {
+		$opts{dedup} = 1;
+	}
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for vals');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	if ( $opts{var} =~ /\[\]$/ ) {
+		$opts{var} =~ s/\[\]$//;
+	}
+
+	my $string;
+	if ( !$self->is_array( var => $opts{var} ) ) {
+			die( '"' . $opts{var} . '" is not a array or is undef' );
+	}
+
+	$string = `yq "$opts{var}" $self->{qfile} 2> /dev/null`;
+	my $yaml;
+	if ( $string =~ /\[\]/ ) {
+		print "blank\n";
+		$yaml = [];
+	}
+	else {
+		eval { $yaml = Load($string); };
+	}
+
+	my @new_array;
+	push( @new_array, @{$yaml} );
+	push( @new_array, @{ $opts{vals} } );
+
+	$self->set_array( var => $opts{var}, vals => \@new_array );
+}
+
 =head2 set_array
 
 Creates an array and sets it to the values.
@@ -721,6 +848,111 @@ sub set_hash {
 	}
 
 	$self->ensure;
+}
+
+=head2 set_in_array
+
+Ensures the values specified exist at any point in the array.
+
+Will create the array if it does not already exist.
+
+Will die if called on a item that is not a array.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    - vals :: Array of values to set the array to.
+
+    - dedup :: If it should deduplicate the existing items
+               in the array or not.
+      Default :: 1
+
+    $yq->set_array(var=>'rule-files',vals=>\@vals);
+
+=cut
+
+sub set_in_array {
+	my ( $self, %opts ) = @_;
+
+	my $to_exist = {};
+	if ( !defined( $opts{vals} ) ) {
+		die('Nothing specified for vars');
+	}
+	else {
+		if ( !defined $opts{vals}[0] ) {
+			return;
+		}
+
+		my $int = 0;
+		while ( defined( $opts{vals}[$int] ) ) {
+			$to_exist->{ $opts{vals}[$int] } = 1;
+			$int++;
+		}
+
+	}
+
+	if ( !defined( $opts{dedup} ) ) {
+		$opts{dedup} = 1;
+	}
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for vals');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	if ( $opts{var} =~ /\[\]$/ ) {
+		$opts{var} =~ s/\[\]$//;
+	}
+
+	my $string;
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
+	}
+	else {
+		if ( !$self->is_array( var => $opts{var} ) ) {
+			die( '"' . $opts{var} . '" is not a array or is undef' );
+		}
+
+	}
+
+	$string = `yq "$opts{var}" $self->{qfile} 2> /dev/null`;
+	my $yaml;
+	if ( $string =~ /\[\]/ ) {
+		print "blank\n";
+		$yaml = [];
+	}
+	else {
+		eval { $yaml = Load($string); };
+	}
+
+	my $int = 0;
+	my @exiting_a;
+	my $existing_h = {};
+	while ( defined( $yaml->[$int] ) ) {
+		if ( defined( $to_exist->{ $yaml->[$int] } ) ) {
+			delete( $to_exist->{ $yaml->[$int] } );
+		}
+
+		push( @exiting_a, $yaml->[$int] );
+
+		$existing_h->{ $yaml->[$int] } = 1;
+
+		$int++;
+	}
+
+	my @new_array;
+	if ( $opts{dedup} ) {
+		push( @new_array, keys( %{$existing_h} ) );
+		push( @new_array, keys( %{$to_exist} ) );
+	}
+	else {
+		push( @new_array, @exiting_a );
+		push( @new_array, keys( %{$to_exist} ) );
+	}
+
+	$self->set_array( var => $opts{var}, vals => \@new_array );
 }
 
 =head1 AUTHOR

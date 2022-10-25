@@ -48,6 +48,9 @@ make install
                   by a /=/.
                   Default :: undef
 
+--dedup <bool>    If it should dedup the data for the op.
+                  Default :: 1
+
 Action :: is_array
 Description :: Returns 0 or 1 based on if it is a array.
 Requires :: --var
@@ -77,6 +80,10 @@ Action :: create_hash
 Description :: Creates the specified hash if it does not exist.
 Requires :: --var
 
+Action :: dedup_array
+Description :: Deduplicates an array.
+Requires :: --var
+
 Action :: delete
 Description :: Deletes the var without checking the type.
 Requires :: --var
@@ -89,6 +96,10 @@ Action :: delete_hash
 Description :: Deletes the specified hash.
 Requires :: --var
 
+Action :: push_array
+Description :: Pushes a set of items onto an array.
+Requires :: --var,--vals
+
 Action :: set_array
 Description :: Clears the array and sets it to specified values.
 Requires :: --var,--vals
@@ -96,4 +107,9 @@ Requires :: --var,--vals
 Action :: set_hash
 Description :: Clears the hash and sets it to specified values.
 Requires :: --var,--hash
+
+Action :: set_in_array
+Description :: Make sure a set of values exist in a array and if not add them.
+Requires :: --var,--vals
+Optional :: --dedup
 ```
