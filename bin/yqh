@@ -32,6 +32,7 @@ my $vals_string;
 my $val_string;
 my $vals_sep = ',';
 my $key;
+my $hash_string;
 Getopt::Long::Configure('no_ignore_case');
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -43,29 +44,49 @@ GetOptions(
 	'a=s'     => \$action,
 	'var=s'   => \$var,
 	'sep=s'   => \$vals_sep,
-		   'vals=s'  => \$vals_string,
-		   'val=s'  => \$val_string,
+	'vals=s'  => \$vals_string,
+	'hash=s'  => \$hash_string,
+	'val=s'   => \$val_string,
 	'k=s'     => \$key,
 );
 
+$vals_sep = quotemeta($vals_sep);
+
 my @vals;
 if ( defined($vals_string) ) {
-	if ($vals_string =~ /[\'\"]/) {
+	if ( $vals_string =~ /[\'\"]/ ) {
 		die('--vals may not contain \' or "');
 	}
 
-	$vals_sep = quotemeta($vals_sep);
-	@vals     = split( /$vals_sep/, $vals_string );
+	@vals = split( /$vals_sep/, $vals_string );
 }
 
-if (defined($var)) {
-	if ($var =~ /[\'\"]/) {
+my $hash = {};
+if ( defined($hash_string) ) {
+	if ( $hash_string =~ /[\'\"]/ ) {
+		die('--hash may not contain \' or "');
+	}
+
+	my @items = split( /$vals_sep/, $hash_string );
+	foreach my $item (@items) {
+		my ( $item_key, $item_val ) = split( /\=/, $item );
+		if ( defined($item_key) and $item_key ne '' ) {
+			$hash->{$item_key} = $item_val;
+		}
+		elsif ( defined($item_key) and $item_key eq '' ) {
+			die('--hash contains a key that matches ""');
+		}
+	}
+}
+
+if ( defined($var) ) {
+	if ( $var =~ /[\'\"]/ ) {
 		die('--var may not contain \' or "');
 	}
 }
 
-if (defined($val_string)) {
-	if ($val_string =~ /[\'\"]/) {
+if ( defined($val_string) ) {
+	if ( $val_string =~ /[\'\"]/ ) {
 		die('--val may not contain \' or "');
 	}
 }
@@ -131,8 +152,18 @@ if ( $action eq 'set_array' ) {
 	exit 0;
 }
 
+if ( $action eq 'set_hash' ) {
+	$yq->set_hash( var => $var, hash => $hash );
+	exit 0;
+}
+
 if ( $action eq 'create_array' ) {
 	$yq->create_array( var => $var, vals => \@vals );
+	exit 0;
+}
+
+if ( $action eq 'create_hash' ) {
+	$yq->create_hash( var => $var );
 	exit 0;
 }
 

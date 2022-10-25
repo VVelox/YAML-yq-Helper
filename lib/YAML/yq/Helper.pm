@@ -170,6 +170,8 @@ Will die if it already exists.
     - var :: Variable to operate on. If not matching /^\./,
              a period will be prepended.
 
+    - vals :: Array of values to set the array to.
+
     $yq->clear_array(var=>'rule-files');
 
 =cut
@@ -189,7 +191,7 @@ sub create_array {
 		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
 	}
 	else {
-		die('"'.$opts{var}.'" already exists');
+		die( '"' . $opts{var} . '" already exists' );
 	}
 
 	if ( $opts{var} !~ /\[\]$/ ) {
@@ -201,6 +203,40 @@ sub create_array {
 		my $insert = $opts{var} . '[' . $int . ']="' . $opts{vals}[$int] . '"';
 		$string = `yq -i '$insert' $self->{qfile}`;
 		$int++;
+	}
+
+	$self->ensure;
+}
+
+=head2 create_array
+
+Creates a empty array.
+
+Will die if it already exists.
+
+    - var :: Variable to operate on. If not matching /^\./,
+             a period will be prepended.
+
+    $yq->clear_array(var=>'rule-files');
+
+=cut
+
+sub create_hash {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for var to check');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	my $string;
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		$string = `yq -i '$opts{var}={}' $self->{qfile}`;
+	}
+	else {
+		die( '"' . $opts{var} . '" already exists' );
 	}
 
 	$self->ensure;
@@ -600,6 +636,69 @@ sub set_array {
 		my $insert = $opts{var} . '[' . $int . ']="' . $opts{vals}[$int] . '"';
 		$string = `yq -i '$insert' $self->{qfile}`;
 		$int++;
+	}
+
+	$self->ensure;
+}
+
+=head2 set_hash
+
+Creates an array and sets it to the values.
+
+If the array is already defined, it will clear it and set
+the values to those specified.
+
+Will die if called on a item that is not a array.
+
+    - var :: Variable to check. If not matching /^\./,
+             a period will be prepended.
+
+    - hash :: 
+
+    $yq->set_array(var=>'rule-files',vals=>\@vals);
+
+=cut
+
+sub set_hash {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{hash} ) ) {
+		die('Nothing specified for hash');
+	}
+
+	if ( !defined( $opts{var} ) ) {
+		die('Nothing specified for vals');
+	}
+	elsif ( $opts{var} !~ /^\./ ) {
+		$opts{var} = '.' . $opts{var};
+	}
+
+	if ( $opts{var} =~ /\[\]$/ ) {
+		die( 'vars, "' . $opts{var} . '", may not contains []' );
+	}
+
+	if ( $opts{var} !~ /\.$/ ) {
+		$opts{var} =~ s/\.$//;
+	}
+
+	my $string;
+	if ( !$self->is_defined( var => $opts{var} ) ) {
+		$string = `yq -i '$opts{var}={}' $self->{qfile}`;
+	}
+	else {
+		$self->clear_hash( var => $opts{var} );
+	}
+
+	my @keys = keys( %{ $opts{hash} } );
+	foreach my $key (@keys) {
+		my $insert;
+		if ( defined( $opts{hash}{$key} ) ) {
+			$insert = $opts{var} . '.' . $key . '="' . $opts{hash}{$key} . '"';
+		}
+		else {
+			$insert = $opts{var} . '.' . $key . '=null';
+		}
+		$string = `yq -i '$insert' $self->{qfile}`;
 	}
 
 	$self->ensure;
