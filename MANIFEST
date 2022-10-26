@@ -8,4 +8,4 @@ t/manifest.t
 t/pod-coverage.t
 t/pod.t
 src_bin/yqh
-bin/
+bin/.exists

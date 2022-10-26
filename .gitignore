@@ -1,3 +1,4 @@
+bin/yqh
 src_bin/.exists
 !Build/
 .last_cover_stats
