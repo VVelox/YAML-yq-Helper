@@ -284,7 +284,8 @@ sub dedup_array {
 		$yaml = [];
 	}
 	else {
-		eval { $yaml = Load($string); };
+		eval        { $yaml   = Load($string); }
+			|| eval { $string = 'foo: ' . $string; $yaml = Load($string); $yaml = $yaml->{foo} };
 	}
 
 	my $int      = 0;
