@@ -12,11 +12,11 @@ YAML::yq::Helper - Wrapper for yq for various common tasks so YAML files can be 
 
 =head1 VERSION
 
-Version 0.1.2
+Version 0.1.3
 
 =cut
 
-our $VERSION = '0.1.2';
+our $VERSION = '0.1.3';
 
 =head1 SYNOPSIS
 
@@ -206,16 +206,16 @@ sub create_array {
 	$self->ensure;
 }
 
-=head2 create_array
+=head2 create_hash
 
-Creates a empty array.
+Creates a empty hash.
 
 Will die if it already exists.
 
     - var :: Variable to operate on. If not matching /^\./,
              a period will be prepended.
 
-    $yq->clear_array(var=>'rule-files');
+    $yq->clear_hash(var=>'rule-files');
 
 =cut
 
