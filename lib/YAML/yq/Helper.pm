@@ -170,7 +170,7 @@ Will die if it already exists.
 
     - vals :: Array of values to set the array to.
 
-    $yq->clear_array(var=>'rule-files');
+    $yq->create_array(var=>'rule-files');
 
 =cut
 
@@ -250,7 +250,7 @@ does not exist.
     - var :: Variable to check. If not matching /^\./,
              a period will be prepended.
 
-    $yq->set_array(var=>'rule-files');
+    $yq->dedup_array(var=>'rule-files');
 
 =cut
 
@@ -665,7 +665,7 @@ does not exist.
 
     - vals :: Array of values to set the array to.
 
-    $yq->set_array(var=>'rule-files',vals=>\@new_rules_files);
+    $yq->push_array(var=>'rule-files',vals=>\@new_rules_files);
 
 =cut
 
@@ -788,7 +788,7 @@ Will die if called on a item that is not a array.
     - hash :: A hash to use for generating the hash to be
               added. Any undef value will be set to null.
 
-    $yq->set_array(var=>'vars',hash=>{a=>33,bar=>undef});
+    $yq->set_hash(var=>'vars',hash=>{a=>33,bar=>undef});
 
 =cut
 
@@ -874,7 +874,7 @@ Will die if called on a item that is not a array.
                in the array or not.
       Default :: 1
 
-    $yq->set_array(var=>'rule-files',vals=>\@vals);
+    $yq->set_in_array(var=>'rule-files',vals=>\@vals);
 
 =cut
 
@@ -989,10 +989,6 @@ You can also look for information at:
 =item * RT: CPAN's request tracker (report bugs here)
 
 L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=YAML-yq-Helper>
-
-=item * CPAN Ratings
-
-L<https://cpanratings.perl.org/d/YAML-yq-Helper>
 
 =item * Search CPAN
 
