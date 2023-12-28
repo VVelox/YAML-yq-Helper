@@ -169,6 +169,8 @@ This is largely for use with stuff used by
 LibYAML as that sometimes does not play nice
 when that is missing.
 
+Version 1.1 is used if it is not set.
+
 #### is_array
 
 Returns 0 or 1 based on if it is a array.
