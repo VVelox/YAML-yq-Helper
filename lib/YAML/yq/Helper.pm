@@ -5,6 +5,9 @@ use strict;
 use warnings;
 use YAML;
 use File::Slurp qw (read_file write_file);
+use File::Temp  qw/ tempfile tempdir /;
+use File::Copy;
+use Cwd;
 
 =head1 NAME
 
@@ -70,7 +73,7 @@ sub new {
 		file   => $opts{file},
 		qfile  => quotemeta( $opts{file} ),
 		ensure => 0,
-		ver    => undef,
+		ver    => '1.1',
 	};
 	bless $self;
 
@@ -78,9 +81,21 @@ sub new {
 	if ( $raw =~ /^\%YAML\ 1\.1/ ) {
 		$self->{ensure} = 1;
 		$self->{ver}    = '1.1';
-	} elsif ( $raw =~ /^\%YAML\ 1\.1/ ) {
+	} elsif ( $raw =~ /^\%YAML\ 1\.2/ ) {
 		$self->{ensure} = 1;
 		$self->{ver}    = '1.2';
+	} elsif ( $raw =~ /^\%YAML\ 1\.2\.0/ ) {
+		$self->{ensure} = 1;
+		$self->{ver}    = '1.2.0';
+	} elsif ( $raw =~ /^\%YAML\ 1\.2\.1/ ) {
+		$self->{ensure} = 1;
+		$self->{ver}    = '1.2.1';
+	} elsif ( $raw =~ /^\%YAML\ 1\.2\.2/ ) {
+		$self->{ensure} = 1;
+		$self->{ver}    = '1.2.2';
+	} elsif ( $raw =~ /^\%YAML\ 1\.0/ ) {
+		$self->{ensure} = 1;
+		$self->{ver}    = '1.0';
 	}
 
 	return $self;
@@ -406,12 +421,21 @@ sub delete_hash {
 Makes sure that the YAML file has the
 version at the top.
 
+If the file none originally, no action will be taken
+unless force=>1 is also set for this. At which point
+it will it to 1.1.
+
     $yq->ensure;
+    $yq->ensure(force=>1);
 
 =cut
 
 sub ensure {
-	my ($self) = @_;
+	my ( $self, %opts ) = @_;
+
+	if ( $opts{force} ) {
+		$self->{ensure} = 1;
+	}
 
 	if ( !$self->{ensure} ) {
 		return;
@@ -700,6 +724,8 @@ sub merge_yaml {
 
 	my $toMerge = $opts{yaml};
 	my $string  = `yq -i '. $mode load("$toMerge")' $self->{qfile}`;
+
+	$self->ensure;
 } ## end sub merge_yaml
 
 =head2 push_array
@@ -996,6 +1022,47 @@ sub set_in_array {
 
 	$self->set_array( var => $opts{var}, vals => \@new_array );
 } ## end sub set_in_array
+
+=head2 yaml_diff
+
+This returns a diff between both YAMLs.
+
+The two YAMLs are are copied to the a temp dir.
+
+    - yaml :: The YAML use for the new side of the diff.
+        - Default :: undef
+
+=cut
+
+sub yaml_diff {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{yaml} ) ) {
+		die('Nothing specified for yaml');
+	} elsif ( !-f $opts{yaml} ) {
+		die( '"' . $opts{yaml} . '" does not exist' );
+	} elsif ( !-r $opts{yaml} ) {
+		die( '"' . $opts{yaml} . '" is not readable' );
+	}
+
+	my $dir = tempdir( CLEANUP => 1 );
+
+	my $yaml1 = $dir . '/old';
+	copy( $self->{file}, $yaml1 );
+	my $string = `yq -i -P 'sort_keys(..) | ... comments=""' -o=props $yaml1`;
+
+	my $yaml2 = $dir . '/new';
+	copy( $opts{yaml}, $yaml2 );
+	$string = `yq -i -P 'sort_keys(..) | ... comments=""' -o=props $yaml2`;
+
+	my $old_dir = getcwd;
+
+	chdir($dir);
+	$string = `diff -u old new`;
+	chdir($old_dir);
+
+	return $string;
+} ## end sub yaml_diff
 
 =head1 AUTHOR
 

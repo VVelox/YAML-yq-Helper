@@ -22,6 +22,8 @@ yqh B<-f> <yaml> B<-a> delete_array B<--var> <var>
 
 yqh B<-f> <yaml> B<-a> delete_hash B<--var> <var>
 
+yqh B<-f> <yaml> B<-a> ensure
+
 yqh B<-f> <yaml> B<-a> is_array B<--var> <var>
 
 yqh B<-f> <yaml> B<-a> is_hash B<--var> <var>
@@ -37,6 +39,8 @@ yqh B<-f> <yaml> B<-a> set_array B<--var> <var> B<--vals> <vals>
 yqh B<-f> <yaml> B<-a> set_hash B<--var> <var> B<--hash> <hash>
 
 yqh B<-f> <yaml> B<-a> set_in_array B<--var> <var> B<--vals> <vals> [B<--dedup>]
+
+yqh B<-f> <yaml> B<-a> yaml_diff B<--yaml> <yaml_file_2>
 
 =head1 FLAGS
 
@@ -143,6 +147,17 @@ Deletes the specified hash.
 
 Requires :: --var
 
+=head2 ensure
+
+Ensures that the YAML starts with
+
+    %YAML $version
+    ---
+
+This is largely for use with stuff used by
+LibYAML as that sometimes does not play nice
+when that is missing.
+
 =head2 is_array
 
 Returns 0 or 1 based on if it is a array.
@@ -194,6 +209,12 @@ Make sure a set of values exist in a array and if not add them.
 Requires :: --var, --vals
 
 Optional :: --dedup
+
+=head2 yaml_diff
+
+Diffs the two YAMLs.
+
+Requires :: --yaml
 
 =cut
 
@@ -402,6 +423,16 @@ if ( $action eq 'create_hash' ) {
 
 if ( $action eq 'merge_yaml' ) {
 	$yq->merge_yaml( yaml => $yaml2, merge_mode => $mode );
+	exit 0;
+}
+
+if ( $action eq 'yaml_diff' ) {
+	print $yq->yaml_diff( yaml => $yaml2 );
+	exit 0;
+}
+
+if ( $action eq 'ensure' ) {
+	$yq->ensure( force=>1 );
 	exit 0;
 }
 
