@@ -34,6 +34,12 @@ sub help {
 --dedup <bool>    If it should dedup the data for the op.
                   Default :: 1
 
+--yaml <file>     Another YAML file.
+                  Default :: undef
+
+--mode <mode>     Merge mode to use.
+                  Default :: deeply
+
 Action :: is_array
 Description :: Returns 0 or 1 based on if it is a array.
 Requires :: --var
@@ -79,9 +85,14 @@ Action :: delete_hash
 Description :: Deletes the specified hash.
 Requires :: --var
 
+Action :: merge_yaml
+Description :: Merges the specified YAML into the YAML.
+Requires :: --yaml
+Optional :: --mode
+
 Action :: push_array
 Description :: Pushes a set of items onto an array.
-Requires :: --var,--vals
+Requires :: --var, --vals
 
 Action :: set_array
 Description :: Clears the array and sets it to specified values.
@@ -96,7 +107,7 @@ Description :: Make sure a set of values exist in a array and if not add them.
 Requires :: --var,--vals
 Optional :: --dedup
 ';
-}
+} ## end sub help
 
 # get the commandline options
 my $help    = 0;
@@ -111,6 +122,8 @@ my $key;
 my $hash_string;
 my $val;
 my $dedup = 1;
+my $yaml2;
+my $mode = 'deeply';
 Getopt::Long::Configure('no_ignore_case');
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -127,6 +140,8 @@ GetOptions(
 	'val=s'   => \$val_string,
 	'k=s'     => \$key,
 	'dedup=s' => \$dedup,
+	'yaml=s'  => \$yaml2,
+	'mode=s'  => \$mode,
 );
 
 $vals_sep = quotemeta($vals_sep);
@@ -178,12 +193,11 @@ if ( defined($hash_string) ) {
 		my ( $item_key, $item_val ) = split( /\=/, $item );
 		if ( defined($item_key) and $item_key ne '' ) {
 			$hash->{$item_key} = $item_val;
-		}
-		elsif ( defined($item_key) and $item_key eq '' ) {
+		} elsif ( defined($item_key) and $item_key eq '' ) {
 			die('--hash contains a key that matches ""');
 		}
 	}
-}
+} ## end if ( defined($hash_string) )
 
 # print version or help if requested
 if ($help) {
@@ -281,6 +295,11 @@ if ( $action eq 'create_array' ) {
 
 if ( $action eq 'create_hash' ) {
 	$yq->create_hash( var => $var );
+	exit 0;
+}
+
+if ( $action eq 'merge_yaml' ) {
+	$yq->merge_yaml( yaml => $yaml2, merge_mode => $mode );
 	exit 0;
 }
 

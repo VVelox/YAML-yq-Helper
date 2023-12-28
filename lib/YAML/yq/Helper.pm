@@ -78,14 +78,13 @@ sub new {
 	if ( $raw =~ /^\%YAML\ 1\.1/ ) {
 		$self->{ensure} = 1;
 		$self->{ver}    = '1.1';
-	}
-	elsif ( $raw =~ /^\%YAML\ 1\.1/ ) {
+	} elsif ( $raw =~ /^\%YAML\ 1\.1/ ) {
 		$self->{ensure} = 1;
 		$self->{ver}    = '1.2';
 	}
 
 	return $self;
-}
+} ## end sub new
 
 =head2 clear_array
 
@@ -105,8 +104,7 @@ sub clear_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -121,7 +119,7 @@ sub clear_array {
 	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
 
 	$self->ensure;
-}
+} ## end sub clear_array
 
 =head2 clear_hash
 
@@ -141,8 +139,7 @@ sub clear_hash {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -157,7 +154,7 @@ sub clear_hash {
 	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
 
 	$self->ensure;
-}
+} ## end sub clear_hash
 
 =head2 create_array
 
@@ -179,16 +176,14 @@ sub create_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
 	my $string;
 	if ( !$self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
-	}
-	else {
+	} else {
 		die( '"' . $opts{var} . '" already exists' );
 	}
 
@@ -204,7 +199,7 @@ sub create_array {
 	}
 
 	$self->ensure;
-}
+} ## end sub create_array
 
 =head2 create_hash
 
@@ -224,21 +219,19 @@ sub create_hash {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
 	my $string;
 	if ( !$self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}={}' $self->{qfile}`;
-	}
-	else {
+	} else {
 		die( '"' . $opts{var} . '" already exists' );
 	}
 
 	$self->ensure;
-}
+} ## end sub create_hash
 
 =head2 dedup_array
 
@@ -263,8 +256,7 @@ sub dedup_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for vals');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -282,9 +274,8 @@ sub dedup_array {
 	if ( $string =~ /\[\]/ ) {
 		print "blank\n";
 		$yaml = [];
-	}
-	else {
-		eval        { $yaml   = Load($string); }
+	} else {
+		eval { $yaml = Load($string); }
 			|| eval { $string = 'foo: ' . $string; $yaml = Load($string); $yaml = $yaml->{foo} };
 	}
 
@@ -301,7 +292,7 @@ sub dedup_array {
 	}
 
 	$self->set_array( var => $opts{var}, vals => \@new_array );
-}
+} ## end sub dedup_array
 
 =head2 delete
 
@@ -319,8 +310,7 @@ sub delete {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -331,7 +321,7 @@ sub delete {
 	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
 
 	$self->ensure;
-}
+} ## end sub delete
 
 =head2 delete_array
 
@@ -351,8 +341,7 @@ sub delete_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -371,7 +360,7 @@ sub delete_array {
 	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
 
 	$self->ensure;
-}
+} ## end sub delete_array
 
 =head2 delete_hash
 
@@ -391,8 +380,7 @@ sub delete_hash {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -411,7 +399,7 @@ sub delete_hash {
 	my $string = `yq -i "del $opts{var}" $self->{qfile}`;
 
 	$self->ensure;
-}
+} ## end sub delete_hash
 
 =head2 ensure
 
@@ -447,7 +435,7 @@ sub ensure {
 	write_file( $self->{file}, $raw ) or die($@);
 
 	return;
-}
+} ## end sub ensure
 
 =head2 is_array
 
@@ -467,19 +455,16 @@ sub is_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
 	my $string = `yq "$opts{var}" $self->{qfile} 2> /dev/null`;
 	if ( $string =~ /\[\]/ ) {
 		return 1;
-	}
-	elsif ( $string =~ /\{\}/ ) {
+	} elsif ( $string =~ /\{\}/ ) {
 		return 0;
-	}
-	elsif ( $string eq "null\n" ) {
+	} elsif ( $string eq "null\n" ) {
 		return 0;
 	}
 
@@ -499,7 +484,7 @@ sub is_array {
 	}
 
 	return 0;
-}
+} ## end sub is_array
 
 =head2 is_array_clear
 
@@ -519,8 +504,7 @@ sub is_array_clear {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -534,7 +518,7 @@ sub is_array_clear {
 	}
 
 	return 0;
-}
+} ## end sub is_array_clear
 
 =head2 is_defined
 
@@ -556,8 +540,7 @@ sub is_defined {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -568,7 +551,7 @@ sub is_defined {
 	}
 
 	return 1;
-}
+} ## end sub is_defined
 
 =head2 is_hash
 
@@ -590,8 +573,7 @@ sub is_hash {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -599,11 +581,9 @@ sub is_hash {
 
 	if ( $string =~ /\[\]/ ) {
 		return 0;
-	}
-	elsif ( $string =~ /\{\}/ ) {
+	} elsif ( $string =~ /\{\}/ ) {
 		return 1;
-	}
-	elsif ( $string eq "null\n" ) {
+	} elsif ( $string eq "null\n" ) {
 		return 0;
 	}
 
@@ -614,7 +594,7 @@ sub is_hash {
 	}
 
 	return 0;
-}
+} ## end sub is_hash
 
 =head2 is_hash_clear
 
@@ -636,8 +616,7 @@ sub is_hash_clear {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for var to check');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -651,7 +630,77 @@ sub is_hash_clear {
 	}
 
 	return 0;
-}
+} ## end sub is_hash_clear
+
+=head2 merge_yaml
+
+Murges the specified YAML into the current YAML.
+
+    - yaml :: The YAML to merge into into the current one.
+            This value may not match /[\'\"]/.
+        - Default :: undef
+
+    - merge_mode :: Merge mode to use.
+        - Default :: deeply
+
+    $yq->merge_yaml(yaml=>'./some_other_file.yaml');
+
+The merge modes are as below.
+
+    - deeply :: Deeply merge arrays.
+        - yq :: '. *d load("file2.yml")'
+
+    - replace :: Replace arrays.
+        - yq :: '. *= load("file2.yml")'
+
+    - append :: Append arrays.
+        - yq :: '. *+ load("file2.yml")'
+
+    - existing :: Only merge existing fields.
+        - yq :: '. *? load("file2.yml")'
+
+    - new :: Only merge new fields.
+        - yq :: '. *n load("file2.yml")'
+
+=cut
+
+sub merge_yaml {
+	my ( $self, %opts ) = @_;
+
+	if ( !defined( $opts{yaml} ) ) {
+		die('Nothing specified for yaml');
+	} elsif ( !-f $opts{yaml} ) {
+		die( '"' . $opts{yaml} . '" does not exist' );
+	} elsif ( $opts{yaml} =~ /[\"\']/ ) {
+		die( '"' . $opts{yaml} . '" may not match /[\\\"\\\']/' );
+	}
+
+	if ( !defined( $opts{merge_mode} ) ) {
+		$opts{merge_mode} = 'deeply';
+	} elsif ( $opts{merge_mode} ne 'deeply'
+		&& $opts{merge_mode} ne 'replace'
+		&& $opts{merge_mode} ne 'append'
+		&& $opts{merge_mode} ne 'existing'
+		&& $opts{merge_mode} ne 'new' )
+	{
+		die( '"' . $opts{merge_mode} . '" is not a recognized merge mode' );
+	}
+
+	# default to deeply
+	my $mode = '*d';
+	if ( $opts{merge_mode} eq 'replace' ) {
+		$mode = '*=';
+	} elsif ( $opts{merge_mode} eq 'append' ) {
+		$mode = '*+';
+	} elsif ( $opts{merge_mode} eq 'existing' ) {
+		$mode = '*?';
+	} elsif ( $opts{merge_mode} eq 'new' ) {
+		$mode = '*n';
+	}
+
+	my $toMerge = $opts{yaml};
+	my $string  = `yq -i '. $mode load("$toMerge")' $self->{qfile}`;
+} ## end sub merge_yaml
 
 =head2 push_array
 
@@ -674,8 +723,7 @@ sub push_array {
 
 	if ( !defined( $opts{vals} ) ) {
 		die('Nothing specified for vars');
-	}
-	else {
+	} else {
 		if ( !defined $opts{vals}[0] ) {
 			return;
 		}
@@ -687,8 +735,7 @@ sub push_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for vals');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -706,9 +753,8 @@ sub push_array {
 	if ( $string =~ /\[\]/ ) {
 		print "blank\n";
 		$yaml = [];
-	}
-	else {
-		eval        { $yaml   = Load($string); }
+	} else {
+		eval { $yaml = Load($string); }
 			|| eval { $string = 'foo: ' . $string; $yaml = Load($string); $yaml = $yaml->{foo} };
 	}
 
@@ -717,7 +763,7 @@ sub push_array {
 	push( @new_array, @{ $opts{vals} } );
 
 	$self->set_array( var => $opts{var}, vals => \@new_array );
-}
+} ## end sub push_array
 
 =head2 set_array
 
@@ -746,16 +792,14 @@ sub set_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for vals');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
 	my $string;
 	if ( $self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
-	}
-	else {
+	} else {
 		$self->clear_array( var => $opts{var} );
 	}
 
@@ -771,7 +815,7 @@ sub set_array {
 	}
 
 	$self->ensure;
-}
+} ## end sub set_array
 
 =head2 set_hash
 
@@ -798,8 +842,7 @@ sub set_hash {
 	my @keys;
 	if ( !defined( $opts{hash} ) ) {
 		die('Nothing specified for hash');
-	}
-	else {
+	} else {
 		if ( ref( $opts{hash} ) ne 'HASH' ) {
 			die( 'The passed value for hash is a ' . ref( $opts{hash} ) . ' and not HASH' );
 		}
@@ -816,14 +859,13 @@ sub set_hash {
 						. '" for the hash is a '
 						. ref( $opts{hash}{$key} )
 						. ' and not SCALAR or undef' );
-			}
-		}
-	}
+			} ## end if ( defined( $opts{hash}{$key} ) && ref( ...))
+		} ## end foreach my $key (@keys)
+	} ## end else [ if ( !defined( $opts{hash} ) ) ]
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for vals');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -838,8 +880,7 @@ sub set_hash {
 	my $string;
 	if ( !$self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}={}' $self->{qfile}`;
-	}
-	else {
+	} else {
 		$self->clear_hash( var => $opts{var} );
 	}
 
@@ -847,15 +888,14 @@ sub set_hash {
 		my $insert;
 		if ( defined( $opts{hash}{$key} ) ) {
 			$insert = $opts{var} . '.' . $key . '="' . $opts{hash}{$key} . '"';
-		}
-		else {
+		} else {
 			$insert = $opts{var} . '.' . $key . '=null';
 		}
 		$string = `yq -i '$insert' $self->{qfile}`;
 	}
 
 	$self->ensure;
-}
+} ## end sub set_hash
 
 =head2 set_in_array
 
@@ -884,8 +924,7 @@ sub set_in_array {
 	my $to_exist = {};
 	if ( !defined( $opts{vals} ) ) {
 		die('Nothing specified for vars');
-	}
-	else {
+	} else {
 		if ( !defined $opts{vals}[0] ) {
 			return;
 		}
@@ -896,7 +935,7 @@ sub set_in_array {
 			$int++;
 		}
 
-	}
+	} ## end else [ if ( !defined( $opts{vals} ) ) ]
 
 	if ( !defined( $opts{dedup} ) ) {
 		$opts{dedup} = 1;
@@ -904,8 +943,7 @@ sub set_in_array {
 
 	if ( !defined( $opts{var} ) ) {
 		die('Nothing specified for vals');
-	}
-	elsif ( $opts{var} !~ /^\./ ) {
+	} elsif ( $opts{var} !~ /^\./ ) {
 		$opts{var} = '.' . $opts{var};
 	}
 
@@ -916,8 +954,7 @@ sub set_in_array {
 	my $string;
 	if ( !$self->is_defined( var => $opts{var} ) ) {
 		$string = `yq -i '$opts{var}=[]' $self->{qfile}`;
-	}
-	else {
+	} else {
 		if ( !$self->is_array( var => $opts{var} ) ) {
 			die( '"' . $opts{var} . '" is not a array or is undef' );
 		}
@@ -929,8 +966,7 @@ sub set_in_array {
 	if ( $string =~ /\[\]/ ) {
 		print "blank\n";
 		$yaml = [];
-	}
-	else {
+	} else {
 		eval { $yaml = Load($string); };
 	}
 
@@ -947,20 +983,19 @@ sub set_in_array {
 		$existing_h->{ $yaml->[$int] } = 1;
 
 		$int++;
-	}
+	} ## end while ( defined( $yaml->[$int] ) )
 
 	my @new_array;
 	if ( $opts{dedup} ) {
 		push( @new_array, keys( %{$existing_h} ) );
 		push( @new_array, keys( %{$to_exist} ) );
-	}
-	else {
+	} else {
 		push( @new_array, @exiting_a );
 		push( @new_array, keys( %{$to_exist} ) );
 	}
 
 	$self->set_array( var => $opts{var}, vals => \@new_array );
-}
+} ## end sub set_in_array
 
 =head1 AUTHOR
 
